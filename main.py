@@ -273,11 +273,11 @@ def show_price(update: Update, context: CallbackContext):
             )
             if img is not None:
                 update.message.reply_photo(
-                    img, caption=message, parse_mode=HTML
+                    img, caption=message, parse_mode='HTML'
                 )
                 return
             else:
-                update.message.reply_text(message, parse_mode = HTML)
+                update.message.reply_text(message, parse_mode = 'HTML')
                 return
         elif response.status_code == 400:
             update.message.reply_text(
