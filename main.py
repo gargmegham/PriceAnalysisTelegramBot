@@ -4,8 +4,6 @@ from requests import Request, Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import traceback, html
-
-from PIL import Image
 import requests
 from io import BytesIO
 
@@ -246,7 +244,7 @@ def show_price(update: Update, context: CallbackContext):
                     logo = meta_data['data'][symbol]['logo']
                     response_img = requests.get(logo)
                     if response_img.status_code==200:
-                        img = Image.open(BytesIO(response_img.content))
+                        img = BytesIO(response_img.content)
                     else:
                         img = None
                 else:
