@@ -191,13 +191,17 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
 """
 
 def round_value(val):
+    if int(val) >= 1000000:
+        return format(val/1000000, '.2f')+'M'
+    if int(val) >= 1000:
+        return format(val/1000, '.2f')+'K'
     if int(val) >= 100:
         return format(val, '.2f')
     if int(val) >= 10:
         return format(val, '.3f')
     if int(val) >= 1:
         return format(val, '.4f')
-    if val >= 0.1:
+    if val >= 0.01:
         return format(val, '.5f')
     return format(val, '.10f')
 
@@ -266,7 +270,7 @@ def show_price(update: Update, context: CallbackContext):
                 low = round_value(price['low']),
                 high = round_value(price['high']),
                 close = round_value(price['close']),
-                volume = format(price['volume'], '.2f'),
+                volume = round_value(price['volume']),
                 currency_name = currency_name
             )
             if img is not None:
