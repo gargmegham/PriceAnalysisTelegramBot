@@ -206,6 +206,7 @@ def round_value(val):
 def show_price(update: Update, context: CallbackContext):
     url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/latest'
     info_url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/info'
+    quote_url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
     try:
         command, symbol = update.message.text.split()
         symbol  = symbol.upper()
@@ -230,6 +231,7 @@ def show_price(update: Update, context: CallbackContext):
     try:
         response = session.get(url, params=parameters)
         response_meta = session.get(info_url, params=parameters)
+        response_quote = session.get(quote_url, params=parameters)
         if response.status_code == 200:
             try:
                 data = json.loads(response.text)
@@ -256,10 +258,21 @@ def show_price(update: Update, context: CallbackContext):
                     logo = None
             if logo is None:
                 img = None
+            price_change = None
             currency_name = list(data['quote'].keys())[0]
+            if response_quote.status_code != 200:
+                price_change = None
+            else:
+                quote_data = json.loads(response_quote.text)
+                if quote_data['status']['error_message'] is None:
+                    price_change = quote_data['data'][symbol]['quote'][currency_name]['percent_change_24h']
+                    price_change = f"<b>{format(price_change, '.2f')}</b>" if price_change > 0 else f"<i>{format(price_change, '.2f')}</i>"
+                else:
+                    price_change = None
             price = data['quote'][currency_name]
             last_updated = ' '.join(price['last_updated'][:price['last_updated'].rindex(':')].split('T'))
-            message = "<code>Symbol: {symbol}\nPrice: {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}</code>".format(
+            time_open = ' '.join(data['time_open'][:data['time_open'].rindex(':')].split('T'))
+            message = "<code>Symbol: {symbol} {price_change}\nPrice: {price} {currency_name}\nName: {name}\nTime Open: {time_open} UTC\nLast updated: {last_updated} UTC\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}</code>".format(
                 symbol = data['symbol'],
                 price = round_value(price['close']),
                 name = data['name'],
@@ -269,7 +282,9 @@ def show_price(update: Update, context: CallbackContext):
                 high = round_value(price['high']),
                 close = round_value(price['close']),
                 volume = round_value(price['volume']),
-                currency_name = currency_name
+                currency_name = currency_name,
+                price_change = price_change,
+                time_open = time_open
             )
             if img is not None:
                 update.message.reply_photo(
