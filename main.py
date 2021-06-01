@@ -191,10 +191,8 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
 """
 
 def round_value(val):
-    if int(val) >= 1000000:
-        return format(val/1000000, '.2f')+'M'
-    if int(val) >= 1000:
-        return format(val/1000, '.2f')+'K'
+    if int(val) >= 1000000000:
+        return format(val/1000, '.2f')+' K'
     if int(val) >= 100:
         return format(val, '.2f')
     if int(val) >= 10:
