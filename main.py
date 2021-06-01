@@ -197,6 +197,8 @@ def round_value(val):
         return format(val, '.3f')
     if int(val) >= 1:
         return format(val, '.4f')
+    if val >= 0.1:
+        return format(val, '.5f')
     return format(val, '.10f')
 
 def show_price(update: Update, context: CallbackContext):
