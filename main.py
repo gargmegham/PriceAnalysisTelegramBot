@@ -5,6 +5,10 @@ from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import traceback, html
 
+from PIL import Image
+import requests
+from io import BytesIO
+
 from typing import Tuple, Optional
 from telegram import Update, Chat, ChatMember, ParseMode, ChatMemberUpdated, user
 from telegram.ext import (
@@ -240,8 +244,15 @@ def show_price(update: Update, context: CallbackContext):
                 meta_data = json.loads(response_meta.text)
                 if meta_data['status']['error_message'] is None:
                     logo = meta_data['data'][symbol]['logo']
+                    response_img = requests.get(logo)
+                    if response_img.status_code==200:
+                        img = Image.open(BytesIO(response_img.content))
+                    else:
+                        img = None
                 else:
                     logo = None
+            if logo is None:
+                img = None
             currency_name = list(data['quote'].keys())[0]
             price = data['quote'][currency_name]
             message = "Symbol: {symbol}\nPrice {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}\n{logo}".format(
@@ -257,9 +268,12 @@ def show_price(update: Update, context: CallbackContext):
                 currency_name = currency_name,
                 logo = logo
             )
-            update.message.reply_text(
-                message
-            )
+            if img is not None:
+                update.message.reply_photo(
+                    img, caption=message
+                )
+            else:
+                update.message.reply_text(message)
         elif response.status_code == 400:
             update.message.reply_text(
                 "Please enter a valid symbol."
