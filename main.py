@@ -266,7 +266,7 @@ def show_price(update: Update, context: CallbackContext):
                 quote_data = json.loads(response_quote.text)
                 if quote_data['status']['error_message'] is None:
                     price_change = quote_data['data'][symbol]['quote'][currency_name]['percent_change_24h']
-                    price_change = f"<b>{format(price_change, '.2f')}</b>" if price_change > 0 else f"<i>{format(price_change, '.2f')}</i>"
+                    price_change = f"<b>+{format(price_change, '.2f')}</b>" if price_change > 0 else f"<i>{format(price_change, '.2f')}</i>"
                 else:
                     price_change = None
             price = data['quote'][currency_name]
