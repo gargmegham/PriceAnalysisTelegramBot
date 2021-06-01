@@ -236,6 +236,7 @@ def show_price(update: Update, context: CallbackContext):
                 update.message.reply_text(
                     "Data not available for this one"
                 )
+                return
             if response_meta.status_code != 200:
                 logo = None
             else:
@@ -270,12 +271,15 @@ def show_price(update: Update, context: CallbackContext):
                 update.message.reply_photo(
                     img, caption=message
                 )
+                return
             else:
                 update.message.reply_text(message)
+                return
         elif response.status_code == 400:
             update.message.reply_text(
                 "Please enter a valid symbol."
             )
+            return
         else:
             logger.info("request failed due to {}".format(response.status_code))
     except (ConnectionError, Timeout, TooManyRedirects) as e:
