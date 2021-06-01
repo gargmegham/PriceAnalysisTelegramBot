@@ -253,11 +253,12 @@ def show_price(update: Update, context: CallbackContext):
                 img = None
             currency_name = list(data['quote'].keys())[0]
             price = data['quote'][currency_name]
-            message = "Symbol: {symbol}\nPrice {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}".format(
+            last_updated = ' '.join(price['last_updated'][:price['last_updated'].rindex(':')].split('T'))
+            message = "Symbol: {symbol}\nPrice: {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}".format(
                 symbol = data['symbol'],
                 price = round_value(price['close']),
                 name = data['name'],
-                last_updated = price['last_updated'],
+                last_updated = last_updated,
                 open = round_value(price['open']),
                 low = round_value(price['low']),
                 high = round_value(price['high']),
