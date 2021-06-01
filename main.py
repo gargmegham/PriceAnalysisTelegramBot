@@ -191,8 +191,8 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
 """
 
 def round_value(val):
-    if int(val) >= 1000000000:
-        return format(val/1000, '.2f')+' K'
+    #if int(val) >= 1000000000:
+    #    return format(val/1000, '.2f')+' K'
     if int(val) >= 100:
         return format(val, '.2f')
     if int(val) >= 10:
@@ -201,7 +201,7 @@ def round_value(val):
         return format(val, '.4f')
     if val >= 0.01:
         return format(val, '.5f')
-    return format(val, '.10f')
+    return format(val, '.8f')
 
 def show_price(update: Update, context: CallbackContext):
     url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/latest'
@@ -259,7 +259,7 @@ def show_price(update: Update, context: CallbackContext):
             currency_name = list(data['quote'].keys())[0]
             price = data['quote'][currency_name]
             last_updated = ' '.join(price['last_updated'][:price['last_updated'].rindex(':')].split('T'))
-            message = "Symbol: {symbol}\nPrice: {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}".format(
+            message = "<code>Symbol: {symbol}\nPrice: {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}</code>".format(
                 symbol = data['symbol'],
                 price = round_value(price['close']),
                 name = data['name'],
@@ -273,11 +273,11 @@ def show_price(update: Update, context: CallbackContext):
             )
             if img is not None:
                 update.message.reply_photo(
-                    img, caption=message
+                    img, caption=message, parse_mode=HTML
                 )
                 return
             else:
-                update.message.reply_text(message)
+                update.message.reply_text(message, parse_mode = HTML)
                 return
         elif response.status_code == 400:
             update.message.reply_text(
