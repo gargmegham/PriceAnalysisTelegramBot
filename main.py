@@ -6,6 +6,8 @@ import json
 import traceback, html
 import requests
 from io import BytesIO
+from datetime import datetime
+import pytz
 
 from typing import Tuple, Optional
 from telegram import Update, Chat, ChatMember, ParseMode, ChatMemberUpdated, user
@@ -190,6 +192,13 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
     }
 """
 
+def convert_ISO_EDT(from_time):
+    from_time = datetime.strptime(from_time[:from_time.rindex('.')], "%Y-%m-%dT%H:%M:%S")
+    eastern = pytz.timezone('US/Eastern')
+    edt_dt = from_time.astimezone(eastern)
+    fmt = '%Y-%m-%d %H:%M:%S %Z%z'
+    return edt_dt.strftime(fmt)
+
 def round_value(val):
     #if int(val) >= 1000000000:
     #    return format(val/1000, '.2f')+' K'
@@ -270,9 +279,9 @@ def show_price(update: Update, context: CallbackContext):
                 else:
                     price_change = None
             price = data['quote'][currency_name]
-            last_updated = ' '.join(price['last_updated'][:price['last_updated'].rindex(':')].split('T'))
-            time_open = ' '.join(data['time_open'][:data['time_open'].rindex(':')].split('T'))
-            message = "<code>Symbol: {symbol} </code>{price_change}%<code>\nPrice: {price} {currency_name}\nName: {name}\nTime Open: {time_open} UTC\nLast updated: {last_updated} UTC\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}</code>".format(
+            last_updated = convert_ISO_EDT(data['last_updated'])
+            time_open = convert_ISO_EDT(data['time_open'])
+            message = "<code>Symbol: {symbol} </code>{price_change}%<code>\nPrice: {price} {currency_name}\nName: {name}\nTime Open: {time_open}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}</code>".format(
                 symbol = data['symbol'],
                 price = round_value(price['close']),
                 name = data['name'],
