@@ -143,7 +143,6 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
     """Echo the user message."""
     user_id = update.message.from_user.id
     current_jobs = dispatcher.job_queue.get_jobs_by_name(str(user_id))
-    # print(user_id, current_jobs)
     if not current_jobs:
         return False
     for job in current_jobs:
@@ -189,10 +188,21 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
     }
 """
 
+def round_value(val):
+    if int(val) >= 100:
+        return format(val, '.2f')
+    if int(val) >= 10:
+        return format(val, '.3f')
+    if int(val) >= 1:
+        return format(val, '.4f')
+    return format(val, '.10f')
+
 def show_price(update: Update, context: CallbackContext):
     url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/latest'
+    info_url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/info'
     try:
         command, symbol = update.message.text.split()
+        symbol  = symbol.upper()
     except:
         update.message.reply_text(
             "Please enter a valid command.\nExample: /p BTC"
@@ -213,15 +223,40 @@ def show_price(update: Update, context: CallbackContext):
 
     try:
         response = session.get(url, params=parameters)
+        response_meta = session.get(info_url, params=parameters)
         if response.status_code == 200:
-            data = json.loads(response.text)
-            if data['status']['error_message'] is not None:
-                raise Exception(data['status']['error_message'])
-            price = data['data']
-            message = json.dumps(price, indent=2)
-            message = message.replace('{', '')
-            message = message.replace('}', '')
-            message = message.replace('\'', '')
+            try:
+                data = json.loads(response.text)
+                if data['status']['error_message'] is not None:
+                    raise Exception(data['status']['error_message'])
+                data = data['data'][symbol]
+            except:
+                update.message.reply_text(
+                    "Data not available for this one"
+                )
+            if response_meta.status_code != 200:
+                logo = None
+            else:
+                meta_data = json.loads(response_meta.text)
+                if meta_data['status']['error_message'] is None:
+                    logo = meta_data['data'][symbol]['logo']
+                else:
+                    logo = None
+            currency_name = list(data['quote'].keys())[0]
+            price = data['quote'][currency_name]
+            message = "Symbol: {symbol}\nPrice {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}\n{logo}".format(
+                symbol = data['symbol'],
+                price = round_value(price['close']),
+                name = data['name'],
+                last_updated = price['last_updated'],
+                open = round_value(price['open']),
+                low = round_value(price['low']),
+                high = round_value(price['high']),
+                close = round_value(price['close']),
+                volume = format(price['volume'], '.2f'),
+                currency_name = currency_name,
+                logo = logo
+            )
             update.message.reply_text(
                 message
             )
