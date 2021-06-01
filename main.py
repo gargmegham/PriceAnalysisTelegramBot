@@ -253,7 +253,7 @@ def show_price(update: Update, context: CallbackContext):
                 img = None
             currency_name = list(data['quote'].keys())[0]
             price = data['quote'][currency_name]
-            message = "Symbol: {symbol}\nPrice {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}\n{logo}".format(
+            message = "Symbol: {symbol}\nPrice {price} {currency_name}\nName: {name}\nLast updated: {last_updated}\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume}".format(
                 symbol = data['symbol'],
                 price = round_value(price['close']),
                 name = data['name'],
@@ -263,8 +263,7 @@ def show_price(update: Update, context: CallbackContext):
                 high = round_value(price['high']),
                 close = round_value(price['close']),
                 volume = format(price['volume'], '.2f'),
-                currency_name = currency_name,
-                logo = logo
+                currency_name = currency_name
             )
             if img is not None:
                 update.message.reply_photo(
