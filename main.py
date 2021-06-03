@@ -148,10 +148,10 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
     user_id = update.message.from_user.id
     current_jobs = dispatcher.job_queue.get_jobs_by_name(str(user_id))
     if not current_jobs:
-        return False
+        return
     for job in current_jobs:
         job.schedule_removal()
-    return True
+    return
 
 """
     {
@@ -200,8 +200,6 @@ def convert_ISO_EDT(from_time):
     return edt_dt.strftime(fmt)
 
 def round_value(val):
-    #if int(val) >= 1000000000:
-    #    return format(val/1000, '.2f')+' K'
     if int(val) >= 100:
         return format(val, '.2f')
     if int(val) >= 10:
@@ -213,6 +211,7 @@ def round_value(val):
     return format(val, '.8f')
 
 def show_price(update: Update, context: CallbackContext):
+    stpRemoval(update, context)
     url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/latest'
     info_url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/info'
     quote_url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
@@ -257,6 +256,7 @@ def show_price(update: Update, context: CallbackContext):
             else:
                 meta_data = json.loads(response_meta.text)
                 if meta_data['status']['error_message'] is None:
+                    token_website = meta_data['data'][symbol]['urls']['website']
                     logo = meta_data['data'][symbol]['logo']
                     response_img = requests.get(logo)
                     if response_img.status_code==200:
@@ -283,10 +283,11 @@ def show_price(update: Update, context: CallbackContext):
             # time_open = convert_ISO_EDT(data['time_open'])
             last_updated = ' '.join(price['last_updated'][:price['last_updated'].rindex(':')].split('T'))
             time_open = ' '.join(data['time_open'][:data['time_open'].rindex(':')].split('T'))
-            message = "<code>Symbol: {symbol} </code>{price_change}%<code>\nPrice: {price} {currency_name}\nName: {name}\nTime Open: {time_open} UTC\nLast updated: {last_updated} UTC\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume} {currency_name}</code>".format(
+            message = "<code>Symbol: {symbol} </code>{price_change}%<code>\nPrice: {price} {currency_name}\nName: {name}\nwebsite: {token_website}\nTime Open: {time_open} UTC\nLast updated: {last_updated} UTC\nopen: {open} {currency_name}\nlow: {low} {currency_name}\nhigh: {high} {currency_name}\nclose: {close} {currency_name}\nvolume: {volume} {currency_name}</code>".format(
                 symbol = data['symbol'],
                 price = round_value(price['close']),
                 name = data['name'],
+                token_website = token_website,
                 last_updated = last_updated,
                 open = round_value(price['open']),
                 low = round_value(price['low']),
