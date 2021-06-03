@@ -256,7 +256,7 @@ def show_price(update: Update, context: CallbackContext):
             else:
                 meta_data = json.loads(response_meta.text)
                 if meta_data['status']['error_message'] is None:
-                    token_website = meta_data['data'][symbol]['urls']['website']
+                    token_website = meta_data['data'][symbol]['urls']['website'][0]
                     logo = meta_data['data'][symbol]['logo']
                     response_img = requests.get(logo)
                     if response_img.status_code==200:
