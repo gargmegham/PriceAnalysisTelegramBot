@@ -1,6 +1,6 @@
 import logging
 
-from requests import Request, Session
+from requests import Session
 from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 import json
 import traceback, html
@@ -120,7 +120,10 @@ def show_chats(update: Update, context: CallbackContext) -> None:
     )
     update.effective_message.reply_text(text)
 
-def kickUser(context: CallbackContext):
+def kick_user(context: CallbackContext):
+    """
+    Kick a user from the chat
+    """
     job = context.job
     updater.bot.kick_chat_member(secrets["CHAT_HANDLE"], user_id=job.context)
 
@@ -141,9 +144,9 @@ def greet_chat_members(update: Update, _: CallbackContext) -> None:
         )    
         """Add a kick job to the queue."""
         due = 60 #seconds
-        dispatcher.job_queue.run_once(kickUser, due, context=update.chat_member.new_chat_member.user.id, name=str(update.chat_member.new_chat_member.user.id))
+        dispatcher.job_queue.run_once(kick_user, due, context=update.chat_member.new_chat_member.user.id, name=str(update.chat_member.new_chat_member.user.id))
 
-def stpRemoval(update: Update, _: CallbackContext) -> None:
+def stp_removal(update: Update, _: CallbackContext) -> None:
     """Echo the user message."""
     user_id = update.message.from_user.id
     current_jobs = dispatcher.job_queue.get_jobs_by_name(str(user_id))
@@ -152,45 +155,6 @@ def stpRemoval(update: Update, _: CallbackContext) -> None:
     for job in current_jobs:
         job.schedule_removal()
     return
-
-"""
-    {
-        'status': 
-        {
-            'timestamp': '2021-06-01T09:12:51.282Z',
-            'error_code': 0, 'error_message': None,
-            'elapsed': 16,
-            'credit_count': 1,
-            'notice': None
-        }, 
-        'data': 
-        {
-            'BTC': 
-            {
-                'id': 1,
-                'name': 'Bitcoin',
-                'symbol': 'BTC',
-                'last_updated': '2021-06-01T08:59:03.000Z',
-                'time_open': '2021-06-01T00:00:00.000Z',
-                'time_close': None,
-                'time_high': '2021-06-01T00:59:03.000Z',
-                'time_low': '2021-06-01T08:49:03.000Z',
-                'quote': 
-                {
-                    'USD': 
-                    {
-                        'open': 37594.10176149504,
-                        'high': 37830.679642740644,
-                        'low': 36085.09744719729,
-                        'close': 36324.605578962626,
-                        'volume': 36252052464.55806,
-                        'last_updated': '2021-06-01T08:59:03.000Z'
-                    }
-                }
-            }
-        }
-    }
-"""
 
 def convert_ISO_EDT(from_time):
     from_time = datetime.strptime(from_time[:from_time.rindex('.')], "%Y-%m-%dT%H:%M:%S")
@@ -211,7 +175,7 @@ def round_value(val):
     return format(val, '.8f')
 
 def show_price(update: Update, context: CallbackContext):
-    stpRemoval(update, context)
+    stp_removal(update, context)
     url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/ohlcv/latest'
     info_url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/info'
     quote_url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
@@ -348,7 +312,7 @@ dispatcher.add_handler(ChatMemberHandler(track_chats, ChatMemberHandler.MY_CHAT_
 dispatcher.add_handler(CommandHandler("show_chats", show_chats))
 dispatcher.add_handler(CommandHandler("p", show_price))
 dispatcher.add_handler(ChatMemberHandler(greet_chat_members, ChatMemberHandler.CHAT_MEMBER))
-dispatcher.add_handler(MessageHandler(Filters.text, stpRemoval))
+dispatcher.add_handler(MessageHandler(Filters.text, stp_removal))
 dispatcher.add_error_handler(error_handler)
 
 # Start the Bot
